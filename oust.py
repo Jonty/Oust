@@ -26,7 +26,7 @@ def regenerate_colours():
 def sleep_controllers(sleep=0.5, leds=(255,255,255), rumble=0, moves=[]):
     pause_time = time.time() + sleep
     while time.time() < pause_time:
-        for move in moves:
+        for othermove in moves:
             othermove.poll()
             othermove.set_rumble(rumble)
             othermove.set_leds(*leds)
