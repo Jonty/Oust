@@ -34,13 +34,12 @@ def sleep_controllers(sleep=0.5, leds=(255,255,255), rumble=0, moves=[]):
 
 
 paired_controllers = []
-moves = [psmove.PSMove(x) for x in range(psmove.count_connected())]
 controllers_alive = {}
-
+usb_paired_controllers = []
 while True:
     start = False
-
     while True:
+        moves = [psmove.PSMove(x) for x in range(psmove.count_connected())]
         for move in moves:
             if move.this == None:
                 print "Move initialisation failed, reinitialising"
@@ -48,15 +47,24 @@ while True:
                 break
 
             # If a controller is plugged in over USB, pair it and turn it white
-            # This appears to occasionally kernel panic raspbian!
             if move.connection_type == psmove.Conn_USB:
+                #make sure the serial is not None. this might happen if you pull the usb while still in this loop
+                if move.get_serial() not in usb_paired_controllers and move.get_serial() != None:
+                    move.pair()
+                    usb_paired_controllers.append(move.get_serial())
+                    print move.get_serial()+" Connected" 
+                    move.set_leds(255,255,255)
+                    move.update_leds()
+                    continue
+            # if the controller pairs over BT, add it to the list and turn it white
+            if move.connection_type == psmove.Conn_Bluetooth:
                 if move.get_serial() not in paired_controllers:
                     move.pair()
                     paired_controllers.append(move.get_serial())
-
-                move.set_leds(255,255,255)
-                move.update_leds()
-                continue
+                    print move.get_serial()+" Connected"    
+                    move.set_leds(255,255,255)
+                    move.update_leds()
+                    continue
 
             if move.poll():
                 # If the trigger is pulled, join the game
