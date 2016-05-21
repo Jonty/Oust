@@ -63,8 +63,12 @@ Amazing Features
 * Support for as many controllers as bluetooth interference will allow
 * Mostly doesn't crash, but when it does it's a kernel panic and not my fault
 
-How to install Oust
--------------------
+How to install Oust from an image
+---------------------------------
+[@hdsjulian](https://twitter.com/hdsjulian/status/733990403075104768) has built a Raspbian image with Oust preinstalled and preconfigured, flash it in the same way you'd flash any other Raspberry Pi image: http://phinn.de/oustpi.img.zip
+
+How to install Oust Manually
+----------------------------
 1. Get a Raspberry Pi 2
 2. Install Raspbian on the SD card
 3. Checkout PSMoveAPI to the pi user's home directory (https://github.com/thp/psmoveapi)
