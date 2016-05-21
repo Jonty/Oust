@@ -56,7 +56,8 @@ while True:
                     move.set_leds(255,255,255)
                     move.update_leds()
                     continue
-            # if the controller pairs over BT, add it to the list and turn it white
+                    
+            # If the controller pairs over BT, add it to the list and turn it white
             if move.connection_type == psmove.Conn_Bluetooth:
                 if move.get_serial() not in paired_controllers:
                     move.pair()
@@ -77,8 +78,8 @@ while True:
                 else:
                     move.set_leds(0,0,0)
 
-                # Triangle starts the game early
-                if move.get_buttons() == 16:
+                # START starts the game early
+                if move.get_buttons() == 2048:
                     start = True
 
                 # Circle shows battery level
@@ -135,6 +136,44 @@ while True:
 
         for serial, move in controllers_alive.items():
 
+            # Win animation / reset
+            if len(controllers_alive) == 1:
+                print "WIN", serial
+
+                HSV = [(x*1.0/50, 0.9, 1) for x in range(50)]
+                colour_range = [[int(x) for x in hsv_to_rgb(*colour)] for colour in HSV]
+
+                serial, move = controllers_alive.items()[0]
+                pause_time = time.time() + 3
+
+                # Ensure all other moves are dark
+                for othermove in moves:
+                    othermove.set_leds(0, 0, 0)
+                    othermove.poll()
+                    othermove.update_leds()
+
+                while time.time() < pause_time:
+                    # Double rainbow
+                    move.set_leds(*colour_range[0])
+                    move.set_rumble(100)
+                    move.poll()
+                    move.update_leds()
+
+                    colour_range.append(colour_range.pop(0))
+
+                    # Everybody vibrates
+                    for othermove in moves:
+                        othermove.set_rumble(100)
+                        othermove.poll()
+                        othermove.update_leds()
+
+                    time.sleep(0.01)
+
+                running = False
+                controllers_alive = {}
+                break
+
+            # Update each move state
             if move.poll():
                 ax, ay, az = move.get_accelerometer_frame(psmove.Frame_SecondHalf)
                 total = sum([ax, ay, az])
@@ -161,28 +200,6 @@ while True:
                 move.update_leds()
                 move_last_values[serial] = total
 
-                # Win animation / reset
-                if len(controllers_alive) == 1:
-                    print "WIN", serial
-
-                    HSV = [(x*1.0/50, 0.9, 1) for x in range(50)]
-                    colour_range = [[int(x) for x in hsv_to_rgb(*colour)] for colour in HSV]
-
-                    serial, move = controllers_alive.items()[0]
-                    pause_time = time.time() + 3
-                    while time.time() < pause_time:
-                        move.set_leds(*colour_range[0])
-                        colour_range.append(colour_range.pop(0))
-                        for othermove in moves:
-                            othermove.set_rumble(100)
-                            othermove.poll()
-                            othermove.update_leds()
-                        time.sleep(0.01)
-
-                    running = False
-                    controllers_alive = {}
-                    break
-
 
         if running:
             # If a controller vanishes during the game, remove it from the game
@@ -194,3 +211,7 @@ while True:
                 for serial, move in controllers_alive.items():
                     if serial not in available:
                         del controllers_alive[serial]
+
+            # Somehow, everyone disconnected
+            if len(moves) == 0:
+                running = False

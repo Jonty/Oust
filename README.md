@@ -57,7 +57,7 @@ Amazing Features
 * Easy pairing
 * Add/remove controllers to the game on the fly
 * Battery checking button (Press circle)
-* Secret goddamn-it-start-the-game button (Press Triangle)
+* Secret goddamn-it-start-the-game button (Press the START button)
 * "Ready, Steady, Go" start sequence to get players attention
 * Going-too-fast warning
 * Support for as many controllers as bluetooth interference will allow
