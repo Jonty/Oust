@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import time
 import psmove
 
@@ -42,7 +44,7 @@ while True:
         moves = [psmove.PSMove(x) for x in range(psmove.count_connected())]
         for move in moves:
             if move.this == None:
-                print "Move initialisation failed, reinitialising"
+                print("Move initialisation failed, reinitialising")
                 moves = []
                 break
 
@@ -52,17 +54,17 @@ while True:
                 if move.get_serial() not in usb_paired_controllers and move.get_serial() != None:
                     move.pair()
                     usb_paired_controllers.append(move.get_serial())
-                    print move.get_serial()+" Connected" 
+                    print(move.get_serial()+" Connected")
                     move.set_leds(255,255,255)
                     move.update_leds()
                     continue
-                    
+
             # If the controller pairs over BT, add it to the list and turn it white
             if move.connection_type == psmove.Conn_Bluetooth:
                 if move.get_serial() not in paired_controllers:
                     move.pair()
                     paired_controllers.append(move.get_serial())
-                    print move.get_serial()+" Connected"    
+                    print(move.get_serial()+" Connected")
                     move.set_leds(255,255,255)
                     move.update_leds()
                     continue
@@ -109,7 +111,7 @@ while True:
         if (len(controllers_alive) >= 2 and start == True):
             break
 
-    print "GAME START"
+    print("GAME START")
     regenerate_colours()
 
     alive = controllers_alive.values()
@@ -134,16 +136,16 @@ while True:
     running = True
     while running:
 
-        for serial, move in controllers_alive.items():
+        for serial, move in list(controllers_alive.items()):
 
             # Win animation / reset
             if len(controllers_alive) == 1:
-                print "WIN", serial
+                print("WIN", serial)
 
                 HSV = [(x*1.0/50, 0.9, 1) for x in range(50)]
                 colour_range = [[int(x) for x in hsv_to_rgb(*colour)] for colour in HSV]
 
-                serial, move = controllers_alive.items()[0]
+                serial, move = list(controllers_alive.items())[0]
                 pause_time = time.time() + 3
 
                 # Ensure all other moves are dark
@@ -182,11 +184,11 @@ while True:
                     change = abs(move_last_values[serial] - total)
                     # Dead
                     if change > 0.7:
-                        print "DEAD", serial
+                        print("DEAD", serial)
                         move.set_leds(0,0,0)
                         move.set_rumble(100)
                         del controllers_alive[serial]
-                    
+
                     # Warn
                     elif change > 0.2:
                         scaled = [int(v*0.3) for v in controller_colours[move.get_serial()]]
