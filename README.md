@@ -2,7 +2,7 @@ Oust
 ====
 <sup>Also known as Candle Fight, Jonty Sebastian Joust, and "that game with the lights".</sup>
 
-A love letter to [Johann Sebastian Joust](http://www.jsjoust.com/), designed for playing outdoors at festivals in the dark. All night long (all night).
+A love letter to [Johann Sebastian Joust](http://www.jsjoust.com/), designed for playing outdoors at noisy festivals in the dark. All night long (all night).
 
 ![Rpi Oust Setup](sandwich_box.jpg)
 
@@ -17,7 +17,7 @@ By this point the game has developed a bit of a following and people are activel
 
 I went to CCC prepared. We had 11 move controllers, three Raspberry Pi's, 46 Ah of portable batteries, and more bluetooth adapters than there are bluetooth channels.
 
-Oust is the result. It runs on a Raspberry Pi 2, can run up to 8 controllers (maybe more), and is specifically designed for environments so loud sign language is required.
+Oust is the result. It runs on a Raspberry Pi 2/3, can run up to 8 controllers (maybe more), and is specifically designed for environments so loud sign language is required.
 
 It was playtested and tweaked extensively at CCC - at one point with a circle of approximately 150 people playing & watching. The longest game I recorded finished after 9 hours of continuous play.
 
@@ -62,7 +62,6 @@ Amazing Features
 * "Ready, Steady, Go" start sequence to get players attention
 * Going-too-fast warning
 * Support for as many controllers as bluetooth interference will allow
-* Mostly doesn't crash, but when it does it's a kernel panic and not my fault
 
 How to install Oust from an image
 ---------------------------------
@@ -84,15 +83,13 @@ How to install Oust Manually
 
 Things You Should Know
 ----------------------
-* PSMoveAPI has a number of problems. The main one is that it is terrible. On my Mac, plugging and unplugging USB devices during pairing can cause the library to crash spectacularly. On the Raspberry Pi it causes a kernel panic. I suggest rebooting and pairing again.
 * The Playstation Move controllers actually implement the USB 1.2 standard, which means they NEED a data connection to charge. Essentially, you must connect them to a computer to charge them, a wall wart won't do.
 * Building PSMoveAPI is horrid. I'll publish debian packages soon.
 * The Raspberry Pi has a number of problems. The main one is that the current kernel (or bluez) shipped in Raspbian is broken - as soon as one controller is paired and has an active data link, the bluetooth adapter receives a command telling it to disable connecting to any other devices. Fortunately I was camping with [ms7821](https://twitter.com/marksteward) and [gavan](https://twitter.com/gavanfantom) who are terrifying bluetooth experts and spent a happy afternoon with HCI packet dumps debugging this. [scan_enable.sh](scan_enable.sh) is the hilarious solution they came up with - once a second it pokes all the bluetooth devices and tells them to accept connections again.
-* Bluetooth is limited to 7 devices per adapter. We've had Oust running with 8 devices, but pairing 9 causes unacceptable lag across all controllers. Bluetooth is a frequency-hopping protocol with 42 channels, and having that many active devices causes collisions. We are fairly certain we can limit the bluetooth channels in use per adapter to solve this, but that is future research.
 
 Future Things I May Do
 ----------------------
 * A pre-built bootable image for the Raspberry Pi (possibly USB bootable)
 * Debian packages of PSMoveAPI for the pi
 * A script that does all the install things
-* Research using more than 8 controllers
+* Better support for more than 8 controllers
