@@ -2,6 +2,24 @@ from __future__ import print_function
 
 import time
 import psmove
+import subprocess
+from collections import defaultdict
+
+def disconnect_move(move):
+    subprocess.call(['hcitool', 'dc', move.get_serial()])
+
+poll_failures = defaultdict(int)
+def poll_move(move):
+    serial = move.get_serial()
+    if move.poll():
+        poll_failures[serial] = 0
+        return True
+    else:
+        poll_failures[serial] += 1
+        if poll_failures[serial] > 1000:
+            print("Disconnecting %s due to poll failure" % move.get_serial())
+            disconnect_move(move)
+        return False
 
 # This nightmarish function was taken from stackoverflow
 def hsv_to_rgb(h, s, v):
@@ -40,7 +58,10 @@ controllers_alive = {}
 usb_paired_controllers = []
 while True:
     start = False
+    battery = False
+    battery_pressed = False
     while True:
+        battery_pressed = False
         moves = [psmove.PSMove(x) for x in range(psmove.count_connected())]
         for move in moves:
             if move.this == None:
@@ -54,7 +75,7 @@ while True:
                 if move.get_serial() not in usb_paired_controllers and move.get_serial() != None:
                     move.pair()
                     usb_paired_controllers.append(move.get_serial())
-                    print(move.get_serial()+" Connected")
+                    print(move.get_serial() + " connected over USB")
                     move.set_leds(255,255,255)
                     move.update_leds()
                     continue
@@ -64,12 +85,12 @@ while True:
                 if move.get_serial() not in paired_controllers:
                     move.pair()
                     paired_controllers.append(move.get_serial())
-                    print(move.get_serial()+" Connected")
+                    print(move.get_serial() + "connected over bluetooth")
                     move.set_leds(255,255,255)
                     move.update_leds()
                     continue
 
-            if move.poll():
+            if poll_move(move):
                 # If the trigger is pulled, join the game
                 if move.get_serial() not in controllers_alive:
                     if move.get_trigger() > 100:
@@ -86,19 +107,30 @@ while True:
 
                 # Circle shows battery level
                 if move.get_buttons() == 32:
-                    battery = move.get_battery()
+                    battery_pressed = True
+                    battery = True
 
-                    if battery == 5: # 100% - green
+                if battery:
+                    level = move.get_battery()
+
+                    if level == 5: # 100% - green
                         move.set_leds(0, 255, 0)
-                    elif battery == 4: # 80% - green-ish
+                    elif level == 4: # 80% - green-ish
                         move.set_leds(128, 200, 0)
-                    elif battery == 3: # 60% - yellow
+                    elif level == 3: # 60% - yellow
                         move.set_leds(255, 255, 0)
                     else: # <= 40% - red
                         move.set_leds(255, 0, 0)
 
                 move.set_rumble(0)
                 move.update_leds()
+
+                # SELECT disconnects the move
+                if move.get_buttons() == 256:
+                    disconnect_move(move)
+
+        if battery and not battery_pressed:
+            battery = False
 
         # If we've got more/less moves, register them
         if psmove.count_connected() != len(moves):
@@ -135,7 +167,6 @@ while True:
 
     running = True
     while running:
-
         for serial, move in list(controllers_alive.items()):
 
             # Win animation / reset
@@ -176,7 +207,7 @@ while True:
                 break
 
             # Update each move state
-            if move.poll():
+            if poll_move(move):
                 ax, ay, az = move.get_accelerometer_frame(psmove.Frame_SecondHalf)
                 total = sum([ax, ay, az])
 
@@ -202,13 +233,12 @@ while True:
                 move.update_leds()
                 move_last_values[serial] = total
 
-
         if running:
             # If a controller vanishes during the game, remove it from the game
             # to allow others to finish
             if psmove.count_connected() != len(moves):
                 moves = [psmove.PSMove(x) for x in range(psmove.count_connected())]
-                available = [ move.get_serial() for move in moves]
+                available = [ m.get_serial() for m in moves]
 
                 for serial, move in controllers_alive.items():
                     if serial not in available:
