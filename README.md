@@ -65,7 +65,7 @@ Amazing Features
 
 How to install Oust from an image
 ---------------------------------
-[@hdsjulian](https://twitter.com/hdsjulian/status/733990403075104768) has built a Raspbian image with Oust preinstalled and preconfigured, flash it in the same way you'd flash any other Raspberry Pi image: http://phinn.de/oustpi.img.zip
+[@hdsjulian](https://twitter.com/hdsjulian/status/733990403075104768) has built a Raspbian image with Oust preinstalled and preconfigured, flash it in the same way you'd flash any other Raspberry Pi image: http://phinn.de/oustpi.img.zip (sha256sum: 7db3147ba2c7a2d8910a16c02eb7ed84424a5bdd39686bc30ea61b7820f99a8b)
 
 How to install Oust Manually
 ----------------------------
